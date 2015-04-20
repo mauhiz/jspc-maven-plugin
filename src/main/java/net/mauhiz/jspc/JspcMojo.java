@@ -3,6 +3,7 @@ package net.mauhiz.jspc;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.FileSystems;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -11,7 +12,6 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jasper.JspC;
-import org.apache.jasper.JspCompilationContext;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -39,17 +39,15 @@ public class JspcMojo extends AbstractMojo {
 	class SpecialJspc extends JspC {
 
 		@Override
-		protected void initClassLoader(final JspCompilationContext clctxt) throws IOException {
-			super.initClassLoader(clctxt);
+		protected ClassLoader initClassLoader() throws IOException {
+			URLClassLoader loader1 = (URLClassLoader) super.initClassLoader();
 
 			// this is because we don't output classes to target/classes, which means the JasperLoader forgets about them after generation.
 			// the trailing slash also matters. Rotten world.
-			final URL[] urLs = ArrayUtils.add(loader.getURLs(), new URL(FileSystems.getDefault().getPath(work).toUri()
+			final URL[] urLs = ArrayUtils.add(loader1.getURLs(), new URL(FileSystems.getDefault().getPath(work).toUri()
 					.toURL()
 					+ "/"));
-			final JspcMojoClassLoader cl = AccessController.doPrivileged(new PrivilegedLoader(urLs));
-			loader = cl;
-			context.setClassLoader(cl);
+			return AccessController.doPrivileged(new PrivilegedLoader(urLs));
 		}
 	}
 
