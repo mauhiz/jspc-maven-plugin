@@ -14,3 +14,8 @@ jspc-maven-plugin
 ## What does it do?
 
 Precompiles JSPs with the full maven classpath.
+
+## Requirements
+
+- JDK 8 or more recent
+- Maven 3.6.3 or more recent
